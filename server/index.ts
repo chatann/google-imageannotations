@@ -1,12 +1,12 @@
 import app from "./utils/app";
 import router from "./utils/router";
 import cors from "cors";
-import { clientOrigin } from "./config/config";
+import { clientOrigin, lambdaUrl } from "./config/config";
 import { Request, Response, NextFunction } from "express";
 
 // cors
 const corsOptions = {
-  origin: clientOrigin,
+  origin: [clientOrigin, lambdaUrl],
   optionsSuccessStatus: 200,
 };
 app.use(cors(corsOptions));

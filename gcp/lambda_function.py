@@ -1,5 +1,8 @@
 import boto3
 import json
+import os
+import urllib
+from urllib import request
 from google.cloud import vision
 
 def lambda_handler(event, context):
@@ -27,9 +30,7 @@ def lambda_handler(event, context):
         # APIレスポンスからWeb検出結果を取得
         annotations = response.web_detection
         
-        # 結果を別のS3バケットに保存する
-        result_bucket_name = bucket_name + '-after'  # 結果を保存する別のS3バケット名
-        result_object_key = object_key + '.json'  # 結果を保存するオブジェクトキー（ファイル名）
+        # 結果をサーバーに送信する
         result_data = {
             'web_entities': [
                 {
@@ -70,21 +71,23 @@ def lambda_handler(event, context):
                 for label in annotations.best_guess_labels
             ],
         }
-        s3.put_object(
-            Bucket=result_bucket_name,
-            Key=result_object_key,
-            Body=json.dumps(result_data)
-        )
-        s3.delete_object(
-            Bucket=bucket_name,
-            Key=object_key
-        )
+
+        request_url = os.environ.get('SERVER_URL') + '/result'
+        headers = {'Content-Type': 'application/json'}
+        data = json.dumps(result_data).encode('utf-8')
         
-        # Lambda関数のレスポンスを返す
-        return {
-            'statusCode': 200,
-            'body': json.dumps('Web detection completed!')
-        }
+        request_post = request.Request(request_url, data, headers)
+        response = request.urlopen(request_post)
+        if response.status == 200:
+            return {
+                'statusCode': 200,
+                'body': json.dumps('Request to server was successful')
+            }
+        else:
+            return {
+                'statusCode': 500,
+                'body': json.dumps('Request to server failed')
+            }
 
     except KeyError as e:
         error_message = 'Invalid S3 event format: {}'.format(str(e))
@@ -93,9 +96,17 @@ def lambda_handler(event, context):
             'statusCode': 400,
             'body': json.dumps(error_message)
         }
+    
+    except (urllib.error.HTTPError) as e:
+        error_message = 'HTTP error occurred: {}'.format(str(e))
+        print(error_message)
+        return {
+            'statusCode': 500,
+            'body': json.dumps(error_message)
+        }
         
-    except (GoogleAPIError, RetryError) as e:
-        error_message = 'Google Cloud Vision API error: {}'.format(str(e))
+    except (urllib.error.URLError) as e:
+        error_message = 'URL error occurred: {}'.format(str(e))
         print(error_message)
         return {
             'statusCode': 500,

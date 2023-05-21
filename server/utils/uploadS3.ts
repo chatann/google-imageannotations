@@ -3,11 +3,12 @@ import s3 from "./s3Client";
 import multer from "multer";
 import multerS3 from "multer-s3";
 import { Request, Response } from "express";
+import { awsBucketName } from "../config/config";
 
-const uploadS3 = async (bucketName: string) => {
-  const storage = multerS3({
+const uploadS3 = multer({
+  storage: multerS3({
     s3: s3,
-    bucket: bucketName,
+    bucket: awsBucketName,
     metadata: function (req: Request, file: Express.Multer.File, cb: Function) {
       cb(null, { fieldName: file.fieldname });
     },
@@ -17,36 +18,12 @@ const uploadS3 = async (bucketName: string) => {
       const objectKey = file.fieldname + "-" + uniqueSuffix;
       cb(null, objectKey);
     },
-  });
-
-  const upload = multer({
-    storage: storage,
-    limits: { fileSize: 1024 * 1024 * 5 },
-    fileFilter: function (req, file, cb) {
-      checkFileType(file, cb);
-    },
-  }).single("file");
-
-  return (req: Request, res: Response) => {
-    return new Promise<string>((resolve, reject) => {
-      upload(req, res, function (err) {
-        if (err instanceof multer.MulterError) {
-          reject(err);
-        } else if (err) {
-          reject(err);
-        } else {
-          const file = req.file as Express.MulterS3.File;
-          const objectKey = file.key;
-          if (!objectKey) {
-            reject(new Error("Object key not found"));
-          } else {
-            resolve(objectKey);
-          }
-        }
-      });
-    });
-  };
-};
+  }),
+  limits: { fileSize: 1024 * 1024 * 5 },
+  fileFilter: function (req, file, cb) {
+    checkFileType(file, cb);
+  },
+}).single("file");
 
 function checkFileType(file: Express.Multer.File, cb: Function) {
   const filetypes = /jpeg|jpg|png|gif/;
