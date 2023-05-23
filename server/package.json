@@ -1,11 +1,8 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "type": "module",
-  "exports": "./index.ts",
   "scripts": {
-    "build": "node --experimental-specifier-resolution=node --loader ts-node/esm ./index.ts",
-    "start": "nodemon --watch './**/*.ts' --exec 'node --experimental-specifier-resolution=node --loader ts-node/esm' ./index.ts"
+    "start": "nodemon index.ts"
   },
   "license": "MIT",
   "devDependencies": {
