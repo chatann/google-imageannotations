@@ -8,6 +8,10 @@ import fs from "fs";
 
 const router = Router();
 
+router.get("/", (req: Request, res: Response) => {
+  res.send("Server is up and running");
+});
+
 router.post("/upload", (req, res) => {
   uploadS3(req, res, function (err) {
     if (err instanceof multer.MulterError) {
