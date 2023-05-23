@@ -9,7 +9,7 @@ const corsOptions = {
   origin: [clientOrigin, lambdaUrl],
   optionsSuccessStatus: 200,
 };
-app.use(cors(corsOptions));
+app.use(cors());
 
 app.use("/api", router);
 
