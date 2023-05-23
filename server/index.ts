@@ -11,6 +11,10 @@ const corsOptions = {
 };
 app.use(cors());
 
+app.get("/", (req: Request, res: Response) => {
+  res.send("Server is up and running");
+});
+
 app.use("/api", router);
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {

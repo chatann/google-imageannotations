@@ -1,16 +1,8 @@
 import { Router, Request, Response } from "express";
 import multer from "multer";
 import uploadS3 from "./uploadS3";
-import webDetection from "./webDetection";
-import { awsBucketName, lambdaUrl } from "../config/config";
-import path from "path";
-import fs from "fs";
 
 const router = Router();
-
-router.get("/", (req: Request, res: Response) => {
-  res.send("Server is up and running");
-});
 
 router.post("/upload", (req, res) => {
   uploadS3(req, res, function (err) {
@@ -25,24 +17,11 @@ router.post("/upload", (req, res) => {
 
 router.post("/result", (req, res) => {
   const jsonData = req.body;
-
-  // Generate a unique filename
-  const filename = Date.now() + ".json";
-
-  // Define the path where the file will be saved
-  const filePath = path.join(__dirname, "public", filename);
-
-  // Write the JSON data to the file
-  fs.writeFile(filePath, JSON.stringify(jsonData), (err) => {
-    if (err) {
-      // An error occurred while saving the file
-      console.error(err);
-      return res.status(500).json({ error: "Failed to save the file" });
-    }
-
-    // File saved successfully
-    return res.status(200).json({ message: "File saved successfully" });
-  });
+  if (!jsonData) {
+    return res.status(400).json({ error: "No data found" });
+  }
+  const data = JSON.stringify(jsonData);
+  return res.status(200).json({ data });
 });
 
 export default router;
