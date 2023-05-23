@@ -2,7 +2,7 @@
   "builds": [
     {
       "src": "index.ts",
-      "use": "@vercel/ts-node"
+      "use": "@vercel/ts"
     }
   ],
   "routes": [
