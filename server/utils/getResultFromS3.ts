@@ -1,30 +1,28 @@
 import s3 from "./s3Client";
-import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { GetObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
 import { awsBucketName } from "../config/config";
 
 const getResultFromS3 = async (objectKey: string) => {
-  const getObjectCommand = new GetObjectCommand({
-    Bucket: `${awsBucketName}-after`,
-    Key: `${objectKey}.json`,
-  });
+  const params = {
+    Bucket: awsBucketName,
+    Key: objectKey,
+  };
+  const headObjectCommand = new HeadObjectCommand(params);
 
-  while (true) {
+  const interval = setInterval(async () => {
     try {
-      const getObjectResponse = await s3.send(getObjectCommand);
-      if (!getObjectResponse.Body) {
-        throw new Error("No body in response");
+      const head = await s3.send(headObjectCommand);
+      if (head.ContentLength) {
+        clearInterval(interval);
+        const getObjectCommand = new GetObjectCommand(params);
+        const data = await s3.send(getObjectCommand);
+        const result = data.Body?.toString();
+        return result;
       }
-      const jsonBody = getObjectResponse.Body;
-      const jsonData = JSON.parse(jsonBody.toString());
-      return jsonData;
     } catch (err) {
-      if (err instanceof Error && err.name !== "NoSuchKey") {
-        throw err;
-      }
+      console.log("Error retrieving result from S3:", err);
     }
-
-    await new Promise((resolve) => setTimeout(resolve, 5000));
-  }
+  }, 1000);
 };
 
 export default getResultFromS3;
