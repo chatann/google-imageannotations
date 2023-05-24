@@ -6,8 +6,8 @@ import { Readable } from "stream";
 const getResultFromS3 = async (objectKey: string) => {
   return new Promise<string>((resolve, reject) => {
     const params = {
-      Bucket: awsBucketName,
-      Key: objectKey,
+      Bucket: `${awsBucketName}-after`,
+      Key: `${objectKey}.json`,
     };
     const headObjectCommand = new HeadObjectCommand(params);
 
@@ -25,13 +25,13 @@ const getResultFromS3 = async (objectKey: string) => {
           for await (const chunk of Body) {
             chunks.push(chunk);
           }
-          return Buffer.concat(chunks).toString("utf-8");
+          const result = Buffer.concat(chunks).toString("utf-8");
+          resolve(result);
         }
       } catch (err) {
         console.log("Error retrieving result from S3:", err);
-        reject(err);
       }
-    }, 1000);
+    }, 3000);
   });
 };
 
