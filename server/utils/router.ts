@@ -20,7 +20,7 @@ router.post(
 
     try {
       const result = await getResultFromS3(objectKey);
-      res.status(200).json({ result });
+      res.status(200).json({ result: result });
     } catch (err: any) {
       res.status(400).json({ err: err.message });
     }
