@@ -8,8 +8,7 @@ const getResultFromS3 = async (objectKey: string) => {
     Key: `${objectKey}.json`,
   });
 
-  let count = 0;
-  while (count < 3) {
+  while (true) {
     try {
       const getObjectResponse = await s3.send(getObjectCommand);
       if (!getObjectResponse.Body) {
@@ -20,14 +19,12 @@ const getResultFromS3 = async (objectKey: string) => {
       return jsonData;
     } catch (err) {
       if (err instanceof Error && err.name !== "NoSuchKey") {
-        console.log("Error retrieving result from S3:", err);
+        throw err;
       }
     }
 
     await new Promise((resolve) => setTimeout(resolve, 5000));
-    count++;
   }
-  throw new Error("No result found");
 };
 
 export default getResultFromS3;

@@ -19,7 +19,7 @@ router.post(
     const objectKey = reqFile.key;
 
     const result = await getResultFromS3(objectKey);
-    res.status(200).json(result);
+    res.status(200).json({ result });
 
     if (err) {
       console.log("Error retrieving result from S3:", err);
