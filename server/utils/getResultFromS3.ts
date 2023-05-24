@@ -17,7 +17,7 @@ const getResultFromS3 = async (objectKey: string) => {
           clearInterval(interval);
           const getObjectCommand = new GetObjectCommand(params);
           const data = await s3.send(getObjectCommand);
-          const result = data.Body?.toString();
+          const result = data.Body?.transformToString();
           if (!result) {
             throw new Error("No result found");
           }
