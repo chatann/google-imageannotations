@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import multer from "multer";
 import uploadS3 from "./uploadS3";
+import getResultFromS3 from "./getResultFromS3";
 
 const router = Router();
 
@@ -11,17 +12,11 @@ router.post("/upload", (req, res) => {
     } else if (err) {
       return res.status(500).json({ error: "Something went wrong" });
     }
-    return res.status(200).json({ message: "File uploaded successfully" });
+    const reqFile = req.file as Express.MulterS3.File;
+    const objectKey = reqFile.key;
+    const result = getResultFromS3(objectKey);
+    return res.status(200).json(result);
   });
-});
-
-router.post("/result", (req, res) => {
-  const jsonData = req.body;
-  if (!jsonData) {
-    return res.status(400).json({ error: "No data found" });
-  }
-  const data = JSON.stringify(jsonData);
-  return res.status(200).json({ data });
 });
 
 export default router;

@@ -72,22 +72,13 @@ def lambda_handler(event, context):
             ],
         }
 
-        request_url = os.environ.get('SERVER_URL') + '/result'
-        headers = {'Content-Type': 'application/json'}
-        data = json.dumps(result_data).encode('utf-8')
-        
-        request_post = request.Request(request_url, data, headers)
-        response = request.urlopen(request_post)
-        if response.status == 200:
-            return {
-                'statusCode': 200,
-                'body': json.dumps('Request to server was successful')
-            }
-        else:
-            return {
-                'statusCode': 500,
-                'body': json.dumps('Request to server failed')
-            }
+        result_bucket_name = bucket_name + '-after'
+        result_object_key = object_key + '.json'
+        s3.put_object(
+            Bucket=result_bucket_name,
+            Key=result_object_key,
+            Body=json.dumps(result_data).encode('utf-8')
+        )
 
     except KeyError as e:
         error_message = 'Invalid S3 event format: {}'.format(str(e))
