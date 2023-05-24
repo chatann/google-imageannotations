@@ -14,15 +14,15 @@ router.post(
       next();
     });
   },
-  async (req, res, err) => {
+  async (req, res) => {
     const reqFile = req.file as Express.MulterS3.File;
     const objectKey = reqFile.key;
 
-    const result = await getResultFromS3(objectKey);
-    res.status(200).json({ result });
-
-    if (err) {
-      console.log("Error retrieving result from S3:", err);
+    try {
+      const result = await getResultFromS3(objectKey);
+      res.status(200).json({ result });
+    } catch (err: any) {
+      res.status(400).json({ err: err.message });
     }
   }
 );
