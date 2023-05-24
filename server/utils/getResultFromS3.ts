@@ -27,7 +27,7 @@ const getResultFromS3 = async (objectKey: string) => {
     await new Promise((resolve) => setTimeout(resolve, 5000));
     count++;
   }
-  console.log("No result found in S3");
+  throw new Error("No result found");
 };
 
 export default getResultFromS3;

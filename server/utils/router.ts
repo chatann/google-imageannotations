@@ -7,20 +7,23 @@ const router = Router();
 router.post(
   "/upload",
   (req, res, next) => {
-    uploadS3(req, res, (err: any) => {
+    uploadS3(req, res, (err) => {
       if (err) {
         return res.status(400).json({ err: err.message });
       }
       next();
     });
   },
-  async (req, res) => {
+  async (req, res, err) => {
     const reqFile = req.file as Express.MulterS3.File;
     const objectKey = reqFile.key;
 
     const result = await getResultFromS3(objectKey);
+    res.status(200).json(result);
 
-    return res.status(200).json(result);
+    if (err) {
+      console.log("Error retrieving result from S3:", err);
+    }
   }
 );
 
