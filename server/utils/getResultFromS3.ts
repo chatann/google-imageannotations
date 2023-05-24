@@ -9,23 +9,24 @@ const getResultFromS3 = async (objectKey: string) => {
   });
 
   let count = 0;
-  try {
-    while (count < 3) {
+  while (count < 3) {
+    try {
       const getObjectResponse = await s3.send(getObjectCommand);
-      if (getObjectResponse.Body) {
-        const jsonBody = getObjectResponse.Body;
-        const jsonData = JSON.parse(jsonBody.toString());
-        return jsonData;
+      if (!getObjectResponse.Body) {
+        throw new Error("No body in response");
       }
-
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-      count++;
+      const jsonBody = getObjectResponse.Body;
+      const jsonData = JSON.parse(jsonBody.toString());
+      return jsonData;
+    } catch (err) {
+      if (err instanceof Error && err.name !== "NoSuchKey") {
+        console.log("Error retrieving result from S3:", err);
+      }
     }
-  } catch (err) {
-    console.log("Error retrieving result from S3:", err);
-  }
 
-  throw new Error("Failed to retrieving result from S3");
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+    count++;
+  }
 };
 
 export default getResultFromS3;
